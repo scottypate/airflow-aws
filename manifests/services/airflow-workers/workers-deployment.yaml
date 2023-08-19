@@ -1,0 +1,114 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: airflow-workers
+  labels:
+    tier: airflow
+    component: workers
+    release: airflow
+spec:
+  serviceName: airflow-workers
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: airflow
+      component: workers
+      release: airflow
+  template:
+    metadata:
+      labels:
+        tier: airflow
+        component: workers
+        release: airflow
+    spec:
+      nodeSelector:
+        {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  component: worker
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      tolerations:
+        []
+      topologySpreadConstraints:
+        []
+      terminationGracePeriodSeconds: 600
+      restartPolicy: Always
+      serviceAccountName: airflow
+      securityContext: 
+        runAsUser: 50000
+        fsGroup: 0
+      initContainers:
+        - name: wait-for-airflow-migrations
+          resources:
+            {}
+          image: local-airflow-image
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+          args:          
+            - airflow
+            - db
+            - check-migrations
+            - --migration-wait-timeout=60
+          envFrom:          
+            []
+          env:          
+            # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              value: postgresql+psycopg2://airflow@postgres:5432/airflow
+            - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+              value: postgresql+psycopg2://airflow@postgres:5432/airflow
+            - name: AIRFLOW_CONN_AIRFLOW_DB
+              value: postgresql+psycopg2://airflow@postgres:5432/airflow
+            - name: AIRFLOW__LOGGING__LOGGING_LEVEL
+              value: WARN
+      containers:
+        - name: worker
+          image: local-airflow-image
+          imagePullPolicy: Never
+          args: 
+            - bash
+            - -c
+            - |-
+              exec \
+              airflow kubernetes worker
+          resources:
+            {}
+          livenessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 20
+            failureThreshold: 5
+            periodSeconds: 60
+            exec:
+              command:
+                  - sh
+                  - -c
+                  - CONNECTION_CHECK_MAX_COUNT=0 exec /entrypoint python -m celery --app airflow.executors.celery_executor.app inspect ping -d celery@$(hostname)
+          ports:
+            - name: worker-logs
+              containerPort: 8793
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+          envFrom:          
+            []
+          env:
+            # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              value: postgresql+psycopg2://airflow@postgres:5432/airflow
+            - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+              value: postgresql+psycopg2://airflow@postgres:5432/airflow
+            - name: AIRFLOW_CONN_AIRFLOW_DB
+              value: postgresql+psycopg2://airflow@postgres:5432/airflow
+            - name: AIRFLOW__LOGGING__LOGGING_LEVEL
+              value: WARN

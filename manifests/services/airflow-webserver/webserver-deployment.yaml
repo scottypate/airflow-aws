@@ -1,0 +1,153 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: airflow-webserver
+  labels:
+    tier: airflow
+    component: webserver
+    release: airflow
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      tier: airflow
+      component: webserver
+      release: airflow
+  template:
+    metadata:
+      labels:
+        tier: airflow
+        component: webserver
+        release: airflow
+    spec:
+      serviceAccountName: airflow
+      nodeSelector:
+        {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  component: webserver
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      tolerations:
+        []
+      topologySpreadConstraints:
+        []
+      restartPolicy: Always
+      securityContext: 
+        runAsUser: 50000
+        fsGroup: 0
+      initContainers:
+        - name: wait-for-airflow-migrations
+          resources:
+            {}
+          image: local-airflow-image
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+          args:          
+            - airflow
+            - db
+            - check-migrations
+            - --migration-wait-timeout=6000
+          envFrom:          
+            []
+          env:          
+            # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+            - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+            - name: AIRFLOW_CONN_AIRFLOW_DB
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+      containers:
+        - name: webserver
+          image: local-airflow-image
+          imagePullPolicy: Never
+          args: 
+            - bash
+            - -c
+            - exec airflow webserver
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "500m"
+            limits:
+              memory: "2000Mi"
+              cpu: "1000m"
+          ports:
+            - name: airflow-ui
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 30
+            failureThreshold: 20
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 30
+            failureThreshold: 20
+            periodSeconds: 5
+          envFrom:          
+            []
+          env:          
+            # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+            - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+            - name: AIRFLOW_CONN_AIRFLOW_DB
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+            - name: webserver-config
+              mountPath: "/opt/airflow/webserver_config.py"
+              subPath: webserver_config.py
+              readOnly: true
+      volumes:
+        - name: airflow-config
+          configMap:
+            name: airflow-config
+        - name: webserver-config
+          configMap:
+            name: webserver-config

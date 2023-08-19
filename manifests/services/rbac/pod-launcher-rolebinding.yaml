@@ -1,0 +1,14 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: airflow-pod-launcher-rolebinding
+  labels:
+    tier: airflow
+    release: airflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airflow-pod-launcher-role
+subjects:
+  - kind: ServiceAccount
+    name: airflow

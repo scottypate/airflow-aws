@@ -1,0 +1,23 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: airflow-pod-log-reader-role
+  labels:
+    tier: airflow
+    release: airflow
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - "pods"
+    verbs:
+      - "list"
+      - "get"
+      - "watch"
+  - apiGroups:
+      - ""
+    resources:
+      - "pods/log"
+    verbs:
+      - "get"
+      - "list"

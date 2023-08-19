@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: airflow
+resources:
+  - ../../services/airflow-scheduler
+  - ../../services/airflow-webserver
+  - ../../services/airflow-workers
+  - ../../services/rbac
+  - config-airflow.yaml
+  - namespace.yaml
+
+patchesStrategicMerge:
+  - scheduler-deployment.yaml
+  - webserver-deployment.yaml

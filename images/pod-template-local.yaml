@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: placeholder-name
+spec:
+  containers:
+    - image: local-airflow-image
+      imagePullPolicy: Never
+      name: base
+      env:          
+        # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+        - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+          valueFrom: 
+            secretKeyRef:
+              name: postgres
+              key: connection
+        - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+          valueFrom: 
+            secretKeyRef:
+              name: postgres
+              key: connection
+        - name: AIRFLOW_CONN_AIRFLOW_DB
+          valueFrom: 
+            secretKeyRef:
+              name: postgres
+              key: connection
+      volumeMounts:
+        - name: airflow-config
+          mountPath: "/opt/airflow/airflow.cfg"
+          subPath: airflow.cfg
+          readOnly: true
+        - name: airflow-logs
+          mountPath: "/opt/airflow/logs"
+  restartPolicy: Never
+  securityContext:
+    runAsUser: 50000
+    fsGroup: 50000
+  serviceAccountName: airflow-workers
+  volumes:
+    - name: airflow-config
+      configMap:
+        name: airflow-config
+    - name: airflow-logs
+      persistentVolumeClaim:
+          claimName: airflow-logs-claim

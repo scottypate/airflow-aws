@@ -1,0 +1,27 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: airflow-scheduler
+  labels:
+    tier: airflow
+    component: scheduler
+    release: airflow
+spec:
+  template:
+    spec:
+      containers:
+        - name: scheduler
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+            - name: airflow-logs
+              mountPath: "/opt/airflow/logs"
+      volumes:
+        - name: airflow-config
+          configMap:
+            name: airflow-config
+        - name: airflow-logs
+          persistentVolumeClaim:
+              claimName: airflow-logs-claim

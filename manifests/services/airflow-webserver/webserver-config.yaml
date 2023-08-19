@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webserver-config
+data:
+  webserver_config.py: |
+    AUTH_ROLE_PUBLIC = 'Admin'

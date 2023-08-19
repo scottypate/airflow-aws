@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres  # Sets Deployment name
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:14
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432  # Exposes container port
+          args:          
+            - postgres
+            - -c
+            - log_statement=all
+            - -c
+            - log_destination=stderr
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "500m"
+            limits:
+              memory: "128Mi"
+              cpu: "1000m"

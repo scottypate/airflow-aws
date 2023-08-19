@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: airflow-workers
+  labels:
+    tier: airflow
+    component: workers
+    release: airflow
+spec:
+  clusterIP: None
+  selector:
+    tier: airflow
+    component: workers
+    release: airflow
+  ports:
+    - name: worker-logs
+      protocol: TCP
+      port: 8793
+      targetPort: 8793

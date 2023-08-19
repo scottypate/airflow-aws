@@ -1,0 +1,29 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: airflow-scheduler
+  labels:
+    tier: airflow
+    component: scheduler
+    release: airflow
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init-db
+          imagePullPolicy: Always
+          image: <IMAGE>
+      containers:
+        # Always run the main scheduler container.
+        - name: scheduler
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+          image: <IMAGE>
+      volumes:
+        - name: airflow-config
+          configMap:
+            name: airflow-config

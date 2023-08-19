@@ -1,0 +1,31 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: airflow-webserver
+  labels:
+    tier: airflow
+    component: webserver
+    release: airflow
+spec:
+  template:
+    spec:
+      containers:
+        # Always run the main webserver container.
+        - name: webserver
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+            - name: airflow-logs
+              mountPath: "/opt/airflow/logs"
+          env:          
+            - name: POD_TEMPLATE_FILE
+              value: "/opt/airflow/pod-template-local.yaml"
+      volumes:
+        - name: airflow-config
+          configMap:
+            name: airflow-config
+        - name: airflow-logs
+          persistentVolumeClaim:
+              claimName: airflow-logs-claim

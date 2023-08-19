@@ -1,0 +1,135 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: airflow-scheduler
+  labels:
+    tier: airflow
+    component: scheduler
+    release: airflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: airflow
+      component: scheduler
+      release: airflow
+  template:
+    metadata:
+      labels:
+        tier: airflow
+        component: scheduler
+        release: airflow
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+    spec:
+      nodeSelector:
+        {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  component: scheduler
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      tolerations:
+        []
+      topologySpreadConstraints:
+        []
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: airflow
+      securityContext: 
+        runAsUser: 50000
+        fsGroup: 0
+      initContainers:
+        - name: init-db
+          resources:
+            {}
+          image: local-airflow-image
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+          args:          
+            - airflow
+            - db
+            - init
+          envFrom:          
+            []
+          env:
+            # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+            - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+            - name: AIRFLOW_CONN_AIRFLOW_DB
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+      containers:
+        # Always run the main scheduler container.
+        - name: scheduler
+          image: local-airflow-image
+          imagePullPolicy: Never
+          args: 
+            - bash
+            - -c
+            - exec airflow scheduler
+          envFrom:          
+            []
+          env:          
+            # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+            - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+            - name: AIRFLOW_CONN_AIRFLOW_DB
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres
+                  key: connection
+          livenessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 20
+            failureThreshold: 5
+            periodSeconds: 60
+            exec:
+              command:
+                  - sh
+                  - -c
+                  - |
+                    CONNECTION_CHECK_MAX_COUNT=0 AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR exec /entrypoint \
+                    airflow jobs check --job-type SchedulerJob --local
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "500m"
+            limits:
+              memory: "2000Mi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+      volumes:
+        - name: airflow-config
+          configMap:
+            name: airflow-config

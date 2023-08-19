@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-template-prod
+spec:
+  containers:
+    - name: base
+      imagePullPolicy: Always
+      env:
+        # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
+        - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: connection
+        - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: connection
+        - name: AIRFLOW_CONN_AIRFLOW_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: connection
+      volumeMounts:
+        - name: airflow-config
+          mountPath: "/opt/airflow/airflow.cfg"
+          subPath: airflow.cfg
+          readOnly: true
+      image: <IMAGE>
+  restartPolicy: Never
+  securityContext:
+    runAsUser: 50000
+    fsGroup: 50000
+  serviceAccountName: airflow
+  volumes:
+    - name: airflow-config
+      configMap:
+        name: airflow-config

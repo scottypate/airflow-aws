@@ -1,0 +1,29 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: airflow-webserver
+  labels:
+    tier: airflow
+    component: webserver
+    release: airflow
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: wait-for-airflow-migrations
+          imagePullPolicy: Always
+          image: <IMAGE_ID>
+      containers:
+        # Always run the main webserver container.
+        - name: webserver
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: airflow-config
+              mountPath: "/opt/airflow/airflow.cfg"
+              subPath: airflow.cfg
+              readOnly: true
+          image: <IMAGE_ID>
+      volumes:
+        - name: airflow-config
+          configMap:
+            name: airflow-config
