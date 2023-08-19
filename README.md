@@ -4,7 +4,7 @@ Run Airflow on K8s in AWS. We are all running the same stuff. This won't be exac
 
 ## EKS Deployment Networking
 
-The example EKS cluster in this repo is configured to allow both private and public access. Private access is done through private subnetting via a NAT gateway. Public access is controlled via allowlisting in the [EKS Security Group](./terraform/modules/k8s/variables.tf#L23). If you have a VPN or want to use a jumpbox, you can restrict EKS to only private access and configure access from your private network.
+The example EKS cluster in this repo is configured to allow both private and public access. Private access is done through private subnetting via a NAT gateway. Public access is controlled via allowlisting in the [EKS Security Group](./terraform/modules/airflow/variables.tf#L23). If you have a VPN or want to use a jumpbox, you can restrict EKS to only private access and configure access from your private network.
 
 ## Database
 
