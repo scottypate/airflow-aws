@@ -50,7 +50,7 @@ kubectl port-forward svc/postgres 5432:5432 --namespace airflow
 kubectl logs ${POD_NAME} -n airflow --all-containers --follow
 
 # Open an interactive shell in a running container
-kubectl exec --stdin --tty -n airflow -c webserver ${POD_NAME} -- /bin/sh
+kubectl exec --stdin --tty -n airflow -c scheduler ${POD_NAME} -- /bin/sh
 
 # Print the plaintext of a kube secret
 kubectl get secret postgres -n airflow -o json | jq -r '.data.connection' | base64 --decode

@@ -78,6 +78,32 @@ spec:
                   name: postgres
                   key: connection
       containers:
+        - name: git-sync
+          image: registry.k8s.io/git-sync/git-sync:v3.6.3
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GIT_SYNC_REPO
+              value: "https://github.com/scottypate/airflow-aws.git"
+            - name: GIT_SYNC_BRANCH
+              value: "main"
+            - name: GIT_SYNC_DEPTH
+              value: "1"
+            - name: GIT_SYNC_ROOT
+              value: "/git"
+            - name: GIT_SYNC_DEST
+              value: ""
+            - name: GIT_SYNC_WAIT
+              value: "30"
+          resources:
+            requests:
+              memory: "10Mi"
+              cpu: "50m"
+            limits:
+              memory: "200Mi"
+              cpu: "100m"
+          volumeMounts:
+            - name: dags
+              mountPath: /git
         # Always run the main scheduler container.
         - name: scheduler
           image: local-airflow-image
@@ -129,7 +155,12 @@ spec:
               mountPath: "/opt/airflow/airflow.cfg"
               subPath: airflow.cfg
               readOnly: true
+            - name: dags
+              mountPath: /git
+              readOnly: true
       volumes:
         - name: airflow-config
           configMap:
             name: airflow-config
+        - name: dags
+          emptyDir: {}
