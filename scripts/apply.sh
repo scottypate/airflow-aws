@@ -11,6 +11,14 @@ elif [ "${ENVIRONMENT}" == "local" ]; then
 		-n airflow \
 		--save-config \
 		--from-literal=connection='postgresql+psycopg2://airflow@postgres:5432/airflow'
+    kubectl create secret generic git-ssh-key \
+        -n airflow \
+        --save-config \
+        --from-file=git-ssh-key=/Users/scottypate/.ssh/id_rsa
+    kubectl create secret generic git-secret-known-hosts \
+        -n airflow \
+        --save-config \
+        --from-file=git-secret-known-hosts=/Users/scottypate/.ssh/known_hosts
     kubectl apply -k  ./manifests/services/logs && \
     while [[ $(kubectl get pvc -n airflow airflow-logs-claim -o 'jsonpath={..status.phase}') != "Bound" ]]; do echo "waiting for PVC status" && sleep 1; done && \
     kubectl apply -k ./manifests/overlays/dev

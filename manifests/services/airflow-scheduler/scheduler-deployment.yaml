@@ -83,7 +83,7 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: GIT_SYNC_REPO
-              value: "https://github.com/scottypate/airflow-aws.git"
+              value: "git@github.com:scottypate/airflow-dags-private.git"
             - name: GIT_SYNC_BRANCH
               value: "main"
             - name: GIT_SYNC_DEPTH
@@ -94,6 +94,14 @@ spec:
               value: ""
             - name: GIT_SYNC_WAIT
               value: "30"
+            - name: GIT_SYNC_SSH
+              value: "true"
+            - name: GIT_SSH_KNOWN_HOSTS_FILE
+              value: "/etc/ssh/git-secret-known-hosts"
+            - name: GIT_SSH_KEY_FILE
+              value: "/etc/git-secret/git-ssh-key"
+            - name: GIT_SYNC_ADD_USER
+              value: "true"
           resources:
             requests:
               memory: "10Mi"
@@ -104,6 +112,12 @@ spec:
           volumeMounts:
             - name: dags
               mountPath: /git
+            - name: git-ssh-key
+              mountPath: /etc/git-secret
+              readOnly: true
+            - name: git-secret-known-hosts
+              mountPath: /etc/ssh
+              readOnly: true
         # Always run the main scheduler container.
         - name: scheduler
           image: local-airflow-image
@@ -164,3 +178,9 @@ spec:
             name: airflow-config
         - name: dags
           emptyDir: {}
+        - name: git-ssh-key
+          secret:
+            secretName: git-ssh-key
+        - name: git-secret-known-hosts
+          secret:
+            secretName: git-secret-known-hosts
