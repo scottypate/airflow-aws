@@ -9,7 +9,6 @@ if [ "${ENVIRONMENT}" == "prod" ]; then
     yq -i '.spec.template.spec.containers[].image = strenv(DOCKER_IMAGE)' ./manifests/overlays/prod/scheduler-deployment.yaml
 	yq -i '.spec.template.spec.containers[].image = strenv(DOCKER_IMAGE)' ./manifests/overlays/prod/webserver-deployment.yaml
 	yq -i '.spec.template.spec.initContainers[].image = strenv(DOCKER_IMAGE)' ./manifests/overlays/prod/webserver-deployment.yaml
-	yq -i '.spec.template.spec.initContainers[].image = strenv(DOCKER_IMAGE)' ./images/pod-template-prod.yaml
 
     kubectl apply -k ./manifests/overlays/prod
 

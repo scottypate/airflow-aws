@@ -33,8 +33,8 @@ The main production database for this example is RDS - Postgres. There is a loca
 2. Build the Terraform plans, `cd terraform/us-west-2 && terraform apply`.  __Hint: don't forget to [allowlist](./terraform/modules/k8s/variables.tf#L23) your IP or connect via a private network__.
 3. Update local kubeconfig to point to the AWS EKS cluster, `make update-kubeconfig`.
 4. Build and push the Airflow image to ECR, `make push-ecr-airflow-image`.
-5. Set secrets in EKS, `make set-kube-secrets`.
-6. Apply kustomize manifests, `make apply-prod-kube-config`
+5. Set secrets in EKS, `make set-kube-secrets-prod`.
+6. Apply kustomize manifests, `make apply-kube-manifests-prod`
 7. Port forward to the local webserver et voilà - `kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow`
 
 ## Common Commands

@@ -12,7 +12,7 @@ spec:
       initContainers:
         - name: wait-for-airflow-migrations
           imagePullPolicy: Always
-          image: ""
+          image: "063789902345.dkr.ecr.us-west-2.amazonaws.com/airflow:prod"
       containers:
         # Always run the main webserver container.
         - name: webserver
@@ -22,7 +22,7 @@ spec:
               mountPath: "/opt/airflow/airflow.cfg"
               subPath: airflow.cfg
               readOnly: true
-          image: ""
+          image: "063789902345.dkr.ecr.us-west-2.amazonaws.com/airflow:prod"
       volumes:
         - name: airflow-config
           configMap:

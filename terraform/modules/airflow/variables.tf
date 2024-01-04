@@ -23,6 +23,6 @@ variable "zones" {
 variable "ip_allowlist" {
   type = list(string)
   default = [
-    "104.189.16.104/32"
+    "<YOUR_IP_ADDRESS_HERE>/32"
   ]
 }

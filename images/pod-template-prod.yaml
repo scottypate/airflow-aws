@@ -4,23 +4,23 @@ metadata:
   name: placeholder-name
 spec:
   containers:
-    - image: placeholder-image
-      imagePullPolicy: Never
+    - image: <PLACEHOLDER_IMAGE>
+      imagePullPolicy: Always
       name: base
-      env:          
+      env:
         # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
         - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
-          valueFrom: 
+          valueFrom:
             secretKeyRef:
               name: postgres
               key: connection
         - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
-          valueFrom: 
+          valueFrom:
             secretKeyRef:
               name: postgres
               key: connection
         - name: AIRFLOW_CONN_AIRFLOW_DB
-          valueFrom: 
+          valueFrom:
             secretKeyRef:
               name: postgres
               key: connection
@@ -40,3 +40,6 @@ spec:
         name: airflow-config
     - name: dags
       emptyDir: {}
+  template:
+    spec:
+      containers: []

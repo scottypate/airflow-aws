@@ -10,9 +10,11 @@ if [ "${ENVIRONMENT}" == "prod" ]; then
     POSTGRES_HOST=$(aws rds describe-db-instances --region ${REGION} --query 'DBInstances[0].Endpoint.Address' --db-instance-identifier airflow-${REGION} --output text)
     CONNECTION_STRING=postgresql+psycopg2://airflow:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/airflow
 
+    kubectl create namespace airflow
     kubectl delete secret postgres --ignore-not-found -n airflow
     kubectl delete secret git-ssh-key --ignore-not-found -n airflow
     kubectl delete secret git-secret-known-hosts --ignore-not-found -n airflow
+    kubectl delete secret airflow-env --ignore-not-found -n airflow
     
     kubectl create secret generic postgres \
         -n airflow \
@@ -32,12 +34,12 @@ if [ "${ENVIRONMENT}" == "prod" ]; then
         --from-file=.env
 
 elif [ "${ENVIRONMENT}" == "local" ]; then
-	# kubectl create namespace airflow
     kubectl create namespace airflow
     kubectl delete secret postgres --ignore-not-found -n airflow
     kubectl delete secret git-ssh-key --ignore-not-found -n airflow
     kubectl delete secret git-secret-known-hosts --ignore-not-found -n airflow
     kubectl delete secret airflow-env --ignore-not-found -n airflow
+
 	kubectl create secret generic postgres \
 		-n airflow \
 		--save-config \

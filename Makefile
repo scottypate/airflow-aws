@@ -26,6 +26,7 @@ login-docker:
 
 .PHONY: build-ecr-airflow-image
 build-ecr-airflow-image: login-docker
+	yq -i '.spec.containers[].image = strenv(DOCKER_IMAGE)' ./images/pod-template-prod.yaml
 	docker build \
 		--platform linux/amd64 \
 		-t ${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/airflow:prod \
