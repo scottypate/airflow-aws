@@ -1,11 +1,12 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod-template-prod
+  name: placeholder-name
 spec:
   containers:
-    - name: base
+    - image: <PLACEHOLDER_IMAGE>
       imagePullPolicy: Always
+      name: base
       env:
         # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
         - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
@@ -28,7 +29,6 @@ spec:
           mountPath: "/opt/airflow/airflow.cfg"
           subPath: airflow.cfg
           readOnly: true
-      image: <IMAGE>
   restartPolicy: Never
   securityContext:
     runAsUser: 50000
@@ -38,3 +38,8 @@ spec:
     - name: airflow-config
       configMap:
         name: airflow-config
+    - name: dags
+      emptyDir: {}
+  template:
+    spec:
+      containers: []

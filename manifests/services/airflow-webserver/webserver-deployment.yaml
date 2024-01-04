@@ -62,7 +62,8 @@ spec:
             - check-migrations
             - --migration-wait-timeout=6000
           envFrom:          
-            []
+            - secretRef:
+                name: airflow-env
           env:          
             # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
             - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
@@ -117,7 +118,8 @@ spec:
             failureThreshold: 20
             periodSeconds: 5
           envFrom:          
-            []
+            - secretRef:
+                name: airflow-env
           env:          
             # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
             - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN

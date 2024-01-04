@@ -14,8 +14,6 @@ data:
     
     [kubernetes_executor]
     namespace = airflow
-    worker_container_repository = local-airflow-image
-    worker_container_tag =
     pod_template_file = /opt/airflow/pod-template-local.yaml
     multi_namespace_mode = False
     delete_worker_pods = True

@@ -59,7 +59,8 @@ spec:
             - check-migrations
             - --migration-wait-timeout=60
           envFrom:          
-            []
+            - secretRef:
+                name: airflow-env
           env:          
             # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
             - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
@@ -101,7 +102,8 @@ spec:
               subPath: airflow.cfg
               readOnly: true
           envFrom:          
-            []
+            - secretRef:
+                name: airflow-env
           env:
             # For Airflow <2.3, backward compatibility; moved to [database] in 2.3
             - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
