@@ -21,18 +21,21 @@ The main production database for this example is RDS - Postgres. There is a loca
 
 ### Run Airflow locally
 
-1. Build the Airflow image locally - `make build-minikube-airflow-image`
-2. Apply the dev k8s config - `make apply-local-kube-config`
-3. Port forward to the local webserver et voilà - `kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow`
+1. Create and Export the .env file variables - `export $(cat .env)`. __Hint: the [.env template](.env.template) file shows which variables you will need to define in your .env file__. 
+2. Build the Airflow image locally - `make build-minikube-airflow-image`
+3. Apply the dev k8s config - `make set-kube-secrets-local`
+4. Apply the dev k8s config - `make apply-kube-manifests-local`
+5. Port forward to the local webserver et voilà - `kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow`
 
 ### Run Airflow on AWS
 
-1. Build the Terraform plans, `cd terraform/us-west-2 && terraform apply`.
-2. Update local kubeconfig to point to the AWS EKS cluster, `make update-kubeconfig`. __Hint: don't forget to [allowlist](./terraform/modules/k8s/variables.tf#L23) your IP or connect via a private network__.
-3. Build and push the Airflow image to ECR, `make push-ecr-airflow-image`.
-4. Set secrets in EKS, `make set-kube-secrets`.
-5. Apply kustomize manifests, `make apply-prod-kube-config`
-6. Port forward to the local webserver et voilà - `kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow`
+1. Create and Export the .env file variables - `export $(cat .env)`. __Hint: the [.env template](.env.template) file shows which variables you will need to define in your .env file__.
+2. Build the Terraform plans, `cd terraform/us-west-2 && terraform apply`.  __Hint: don't forget to [allowlist](./terraform/modules/k8s/variables.tf#L23) your IP or connect via a private network__.
+3. Update local kubeconfig to point to the AWS EKS cluster, `make update-kubeconfig`.
+4. Build and push the Airflow image to ECR, `make push-ecr-airflow-image`.
+5. Set secrets in EKS, `make set-kube-secrets`.
+6. Apply kustomize manifests, `make apply-prod-kube-config`
+7. Port forward to the local webserver et voilà - `kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow`
 
 ## Common Commands
 

@@ -1,7 +1,7 @@
 resource "aws_eks_cluster" "airflow" {
   name     = "airflow"
   role_arn = aws_iam_role.eks_cluster_role.arn
-  version  = "1.27"
+  version  = "1.28"
 
   vpc_config {
     subnet_ids              = [aws_subnet.main["a"].id, aws_subnet.main["b"].id, aws_subnet.main["c"].id]

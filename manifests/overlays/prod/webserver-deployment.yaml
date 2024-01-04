@@ -12,7 +12,7 @@ spec:
       initContainers:
         - name: wait-for-airflow-migrations
           imagePullPolicy: Always
-          image: <IMAGE_ID>
+          image: ""
       containers:
         # Always run the main webserver container.
         - name: webserver
@@ -22,7 +22,7 @@ spec:
               mountPath: "/opt/airflow/airflow.cfg"
               subPath: airflow.cfg
               readOnly: true
-          image: <IMAGE_ID>
+          image: ""
       volumes:
         - name: airflow-config
           configMap:

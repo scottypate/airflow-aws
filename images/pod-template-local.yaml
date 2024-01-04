@@ -40,6 +40,8 @@ spec:
     - name: airflow-config
       configMap:
         name: airflow-config
+    - name: dags
+      emptyDir: {}
     - name: airflow-logs
       persistentVolumeClaim:
           claimName: airflow-logs-claim
