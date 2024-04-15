@@ -1,4 +1,4 @@
-FROM apache/airflow:2.8.0 as dev
+FROM apache/airflow:2.9.0 as dev
 
 COPY dags/ /git/airflow-dags-private.git/dags
 
